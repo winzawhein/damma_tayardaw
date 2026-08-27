@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71772564304",
+    "project_id": "damma-tayardaw",
+    "storage_bucket": "damma-tayardaw.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71772564304:android:fdfd1609044b53f94dda55",
+        "android_client_info": {
+          "package_name": "com.gawdama.gawdama_tayardaw"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiOSFxZ9ibZTC41e9nEBonFzHJtZlZJQ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

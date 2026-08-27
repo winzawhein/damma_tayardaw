@@ -1,0 +1,14 @@
+{
+  "title": "မင်္ဂလသုတ် တရားတော်",
+  "teacher": "ဆရာတော်အမည်",
+  "category": "သုတ္တန်",
+  "summary": "အကြောင်းအရာအကျဉ်း",
+  "formats": ["audio", "video", "text"],
+  "durationSeconds": 1230,
+  "publishedAt": "2026-08-26T00:00:00.000Z",
+  "audioUrl": "https://your-cdn.example/dhamma.mp3",
+  "youtubeVideoId": "YOUR_VIDEO_ID",
+  "article": "မြန်မာစာသား...",
+  "featured": true,
+  "published": true
+}
