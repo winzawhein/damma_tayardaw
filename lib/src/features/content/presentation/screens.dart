@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart' as audio;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../../core/notifications/notification_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass.dart';
 import '../domain/dhamma_content.dart';
@@ -19,41 +20,146 @@ class AppShell extends StatelessWidget {
     bottomNavigationBar: SafeArea(
       minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: GlassPanel(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.all(5),
         borderRadius: 28,
-        child: NavigationBar(
-          height: 66,
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (i) => navigationShell.goBranch(
-            i,
-            initialLocation: i == navigationShell.currentIndex,
+        child: SizedBox(
+          height: 74,
+          child: Row(
+            children: [
+              _BottomNavItem(
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home_rounded,
+                label: 'ပင်မ',
+                index: 0,
+                navigationShell: navigationShell,
+              ),
+              _BottomNavItem(
+                icon: Icons.menu_book_outlined,
+                selectedIcon: Icons.menu_book_rounded,
+                label: 'တရားတော်',
+                index: 1,
+                navigationShell: navigationShell,
+              ),
+              _BottomNavItem(
+                icon: Icons.bookmark_outline_rounded,
+                selectedIcon: Icons.bookmark_rounded,
+                label: 'သိမ်းထား',
+                index: 2,
+                navigationShell: navigationShell,
+              ),
+              _BottomNavItem(
+                icon: Icons.person_outline_rounded,
+                selectedIcon: Icons.person_rounded,
+                label: 'မိမိ',
+                index: 3,
+                navigationShell: navigationShell,
+              ),
+            ],
           ),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home, color: AppColors.gold),
-              label: 'ပင်မ',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book, color: AppColors.gold),
-              label: 'တရားတော်',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.bookmark_outline),
-              selectedIcon: Icon(Icons.bookmark, color: AppColors.gold),
-              label: 'သိမ်းထား',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person, color: AppColors.gold),
-              label: 'မိမိ',
-            ),
-          ],
         ),
       ),
     ),
   );
+}
+
+class _BottomNavItem extends StatelessWidget {
+  const _BottomNavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    required this.index,
+    required this.navigationShell,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final int index;
+  final StatefulNavigationShell navigationShell;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = navigationShell.currentIndex == index;
+    return Expanded(
+      child: Semantics(
+        selected: selected,
+        button: true,
+        label: label,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () =>
+                  navigationShell.goBranch(index, initialLocation: selected),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  gradient: selected
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0x8AF0B94A), Color(0x35A96916)],
+                        )
+                      : null,
+                  border: Border.all(
+                    color: selected
+                        ? const Color(0x99F0B94A)
+                        : Colors.transparent,
+                  ),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.gold.withValues(alpha: .24),
+                            blurRadius: 24,
+                            spreadRadius: 1,
+                          ),
+                          const BoxShadow(
+                            color: Color(0x66000000),
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      child: Icon(
+                        selected ? selectedIcon : icon,
+                        key: ValueKey(selected),
+                        color: selected ? Colors.white : AppColors.muted,
+                        size: selected ? 27 : 24,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: selected ? Colors.white : AppColors.muted,
+                        fontSize: 10.5,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class HomeScreen extends ConsumerWidget {
@@ -162,9 +268,10 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     height: 330,
     clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
+    foregroundDecoration: BoxDecoration(
       borderRadius: BorderRadius.circular(30),
-      border: Border.all(color: AppColors.line),
+      border: Border.all(color: const Color(0x66F0B94A), width: 0.5),
     ),
     child: Stack(
       fit: StackFit.expand,
@@ -227,39 +334,380 @@ class _Search extends StatelessWidget {
   );
 }
 
-class _CategoryRow extends StatelessWidget {
+class _CategoryRow extends ConsumerWidget {
   const _CategoryRow();
   @override
-  Widget build(BuildContext context) {
-    const categories = [
-      (Icons.self_improvement, 'ဘုရားရှိခိုး'),
-      (Icons.headphones, 'အသံတရား'),
-      (Icons.ondemand_video, 'ရုပ်သံ'),
-      (Icons.auto_stories, 'ဓမ္မစာပေ'),
-    ];
-    return Row(
-      children: categories
-          .map(
-            (c) => Expanded(
-              child: InkWell(
-                onTap: () => context.go('/library'),
-                child: Column(
-                  children: [
-                    GoldIcon(c.$1),
-                    const SizedBox(height: 8),
-                    Text(
-                      c.$2,
-                      style: const TextStyle(fontSize: 11),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref
+        .watch(categoriesProvider)
+        .when(
+          data: (categories) => categories.isEmpty
+              ? const _Empty(message: 'ဓမ္မကဏ္ဍများ မထည့်ရသေးပါ')
+              : SizedBox(
+                  height: 78,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return SizedBox(
+                        width: 82,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.push(
+                            '/category/${Uri.encodeComponent(category.id)}',
+                          ),
+                          child: Column(
+                            children: [
+                              GoldIcon(_categoryIcon(category.iconKey)),
+                              const SizedBox(height: 8),
+                              Text(
+                                category.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
-          )
-          .toList(),
+          loading: () => const SizedBox(
+            height: 78,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, _) => _ErrorPanel(message: '$error'),
+        );
+  }
+}
+
+class CategoryDetailScreen extends ConsumerWidget {
+  const CategoryDetailScreen({required this.categoryId, super.key});
+  final String categoryId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref
+        .watch(categoriesProvider)
+        .when(
+          data: (categories) {
+            DhammaCategory? category;
+            for (final item in categories) {
+              if (item.id == categoryId) {
+                category = item;
+                break;
+              }
+            }
+            return category == null
+                ? const _CategoryLoadingPage(
+                    child: _ErrorPanel(message: 'ဓမ္မကဏ္ဍ မတွေ့ပါ'),
+                  )
+                : _CategoryDocumentPage(category: category);
+          },
+          loading: () => const _CategoryLoadingPage(
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, _) =>
+              _CategoryLoadingPage(child: _ErrorPanel(message: '$error')),
+        );
+  }
+}
+
+class _CategoryLoadingPage extends StatelessWidget {
+  const _CategoryLoadingPage({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => ScreenBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text('ဓမ္မကဏ္ဍ'),
+      ),
+      body: child,
+    ),
+  );
+}
+
+class _CategoryDocumentPage extends ConsumerStatefulWidget {
+  const _CategoryDocumentPage({required this.category});
+  final DhammaCategory category;
+  @override
+  ConsumerState<_CategoryDocumentPage> createState() =>
+      _CategoryDocumentPageState();
+}
+
+class _CategoryDocumentPageState extends ConsumerState<_CategoryDocumentPage> {
+  late final List<GlobalKey> sectionKeys;
+
+  @override
+  void initState() {
+    super.initState();
+    sectionKeys = List.generate(
+      widget.category.readableSections.length,
+      (_) => GlobalKey(),
     );
   }
+
+  Future<void> _goToSection(int index) async {
+    final sectionContext = sectionKeys[index].currentContext;
+    if (sectionContext == null) return;
+    await Scrollable.ensureVisible(
+      sectionContext,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOutCubic,
+      alignment: .04,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final category = widget.category;
+    final sections = category.readableSections;
+    final tracks = category.audioTracks;
+    final readerSize = ref.watch(preferencesProvider).readerFontSize;
+    return ScreenBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Text(category.name),
+          centerTitle: true,
+        ),
+        bottomNavigationBar: tracks.isEmpty
+            ? null
+            : SafeArea(
+                minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: _FloatingAudioPlaylist(tracks: tracks),
+              ),
+        body: ListView(
+          padding: EdgeInsets.fromLTRB(20, 12, 20, tracks.isEmpty ? 36 : 120),
+          children: [
+            GlassPanel(
+              child: Row(
+                children: [
+                  GoldIcon(_categoryIcon(category.iconKey), size: 26),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.name,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'စာခေါင်းစဉ် ${sections.length} • အသံ ${tracks.length}',
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (sections.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              const Text(
+                'မာတိကာ',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 42,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: sections.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (_, index) => ActionChip(
+                    avatar: Text('${index + 1}'),
+                    label: Text(sections[index].title),
+                    onPressed: () => _goToSection(index),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 22),
+            if (sections.isEmpty)
+              const _CompactEmpty(
+                message: 'ဤကဏ္ဍတွင် စာဖတ်အကြောင်းအရာ မရှိသေးပါ',
+              )
+            else
+              ...List.generate(sections.length, (index) {
+                final section = sections[index];
+                return Padding(
+                  key: sectionKeys[index],
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: GlassPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          section.title,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const Divider(height: 26),
+                        SelectableText(
+                          section.content,
+                          style: TextStyle(fontSize: readerSize, height: 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloatingAudioPlaylist extends StatefulWidget {
+  const _FloatingAudioPlaylist({required this.tracks});
+  final List<DhammaAudioTrack> tracks;
+  @override
+  State<_FloatingAudioPlaylist> createState() => _FloatingAudioPlaylistState();
+}
+
+class _FloatingAudioPlaylistState extends State<_FloatingAudioPlaylist> {
+  final player = audio.AudioPlayer();
+  StreamSubscription<audio.PlayerState>? subscription;
+  int selectedIndex = 0;
+  bool loading = true;
+  String? error;
+
+  DhammaAudioTrack get selectedTrack => widget.tracks[selectedIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectTrack(0, autoPlay: false);
+    subscription = player.playerStateStream.listen((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  Future<void> _selectTrack(int index, {required bool autoPlay}) async {
+    if (mounted) {
+      setState(() {
+        selectedIndex = index;
+        loading = true;
+        error = null;
+      });
+    }
+    try {
+      await player.setUrl(widget.tracks[index].url);
+      if (autoPlay) await player.play();
+    } catch (_) {
+      error = 'အသံဖိုင်ကို ဖွင့်၍ မရပါ';
+    }
+    if (mounted) setState(() => loading = false);
+  }
+
+  Future<void> _showPlaylist() async {
+    final index = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView.builder(
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(bottom: 16),
+          itemCount: widget.tracks.length,
+          itemBuilder: (context, index) => ListTile(
+            leading: CircleAvatar(
+              backgroundColor: index == selectedIndex
+                  ? AppColors.gold
+                  : Colors.white10,
+              child: Text('${index + 1}'),
+            ),
+            title: Text(widget.tracks[index].title),
+            trailing: index == selectedIndex
+                ? const Icon(Icons.graphic_eq, color: AppColors.gold)
+                : const Icon(Icons.play_arrow_rounded),
+            onTap: () => Navigator.pop(context, index),
+          ),
+        ),
+      ),
+    );
+    if (index != null) await _selectTrack(index, autoPlay: true);
+  }
+
+  @override
+  void dispose() {
+    subscription?.cancel();
+    player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => GlassPanel(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+    borderRadius: 24,
+    child: Row(
+      children: [
+        IconButton(
+          tooltip: 'အသံစာရင်း',
+          onPressed: _showPlaylist,
+          icon: const Icon(Icons.queue_music_rounded, color: AppColors.gold),
+        ),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                selectedTrack.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              Text(
+                error ?? '${selectedIndex + 1} / ${widget.tracks.length}',
+                style: TextStyle(
+                  color: error == null ? AppColors.muted : Colors.redAccent,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (loading)
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else
+          IconButton.filled(
+            onPressed: error != null
+                ? () => _selectTrack(selectedIndex, autoPlay: false)
+                : player.playing
+                ? player.pause
+                : player.play,
+            icon: Icon(
+              error != null
+                  ? Icons.refresh
+                  : player.playing
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded,
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 class LibraryScreen extends ConsumerWidget {
@@ -267,6 +715,7 @@ class LibraryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(formatFilterProvider);
+    final selectedCategory = ref.watch(categoryFilterProvider);
     final result = ref.watch(filteredContentProvider);
     return ScreenBackground(
       child: Scaffold(
@@ -284,6 +733,19 @@ class LibraryScreen extends ConsumerWidget {
                 onChanged: (v) => ref.read(searchProvider.notifier).state = v,
               ),
               const SizedBox(height: 16),
+              if (selectedCategory != null) ...[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InputChip(
+                    avatar: const Icon(Icons.category_outlined, size: 18),
+                    label: Text(selectedCategory),
+                    selected: true,
+                    onDeleted: () =>
+                        ref.read(categoryFilterProvider.notifier).state = null,
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -450,24 +912,36 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          const _SettingsTile(
+          _SettingsTile(
             icon: Icons.history,
             title: 'နားထောင်ခဲ့သော မှတ်တမ်း',
+            onTap: () => context.push('/settings/history'),
           ),
-          const _SettingsTile(
+          _SettingsTile(
             icon: Icons.download_outlined,
             title: 'ဒေါင်းလုဒ်များ',
+            onTap: () => context.push('/settings/downloads'),
           ),
-          const _SettingsTile(
+          _SettingsTile(
             icon: Icons.notifications_none,
             title: 'အသိပေးချက်များ',
+            onTap: () => context.push('/settings/notifications'),
           ),
-          const _SettingsTile(
+          _SettingsTile(
             icon: Icons.text_fields,
             title: 'စာလုံးအရွယ်အစား',
+            onTap: () => context.push('/settings/reader'),
           ),
-          const _SettingsTile(icon: Icons.language, title: 'ဘာသာစကား'),
-          const _SettingsTile(icon: Icons.info_outline, title: 'အက်ပ်အကြောင်း'),
+          _SettingsTile(
+            icon: Icons.language,
+            title: 'ဘာသာစကား',
+            onTap: () => context.push('/settings/language'),
+          ),
+          _SettingsTile(
+            icon: Icons.info_outline,
+            title: 'အက်ပ်အကြောင်း',
+            onTap: () => context.push('/settings/about'),
+          ),
           const SizedBox(height: 18),
           const Center(
             child: Text(
@@ -476,6 +950,325 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
+  );
+}
+
+class HistoryScreen extends ConsumerWidget {
+  const HistoryScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ids = ref.watch(historyProvider);
+    return ScreenBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text('နားထောင်ခဲ့သော မှတ်တမ်း'),
+          actions: [
+            if (ids.isNotEmpty)
+              TextButton(
+                onPressed: () => ref.read(historyProvider.notifier).clear(),
+                child: const Text('ရှင်းမည်'),
+              ),
+          ],
+        ),
+        body: ref
+            .watch(contentProvider)
+            .when(
+              data: (content) {
+                final byId = {for (final item in content) item.id: item};
+                final items = ids
+                    .map((id) => byId[id])
+                    .whereType<DhammaContent>()
+                    .toList();
+                return items.isEmpty
+                    ? const _Empty(
+                        message:
+                            'ဖတ်ရှု သို့မဟုတ် နားထောင်ထားသော မှတ်တမ်း မရှိသေးပါ',
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                        children: items
+                            .map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: ContentCard(item: item),
+                              ),
+                            )
+                            .toList(),
+                      );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => _ErrorPanel(message: '$error'),
+            ),
+      ),
+    );
+  }
+}
+
+class DownloadsScreen extends ConsumerWidget {
+  const DownloadsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedIds = ref.watch(favoritesProvider);
+    return ScreenBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text('ဒေါင်းလုဒ်များ'),
+        ),
+        body: ref
+            .watch(contentProvider)
+            .when(
+              data: (content) {
+                final downloadable = content
+                    .where(
+                      (item) =>
+                          savedIds.contains(item.id) &&
+                          item.audioUrl?.isNotEmpty == true,
+                    )
+                    .toList();
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                  children: [
+                    const GlassPanel(
+                      child: Row(
+                        children: [
+                          GoldIcon(Icons.download_for_offline_outlined),
+                          SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              'သိမ်းထားသော MP3 တရားတော်များကို ဤနေရာတွင် အော့ဖ်လိုင်းဒေါင်းလုဒ် စီမံနိုင်ပါသည်။',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    if (downloadable.isEmpty)
+                      const _Empty(
+                        message:
+                            'ဒေါင်းလုဒ်လုပ်နိုင်သော MP3 တရားတော် မရှိသေးပါ',
+                      )
+                    else
+                      ...downloadable.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: ContentCard(item: item),
+                        ),
+                      ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => _ErrorPanel(message: '$error'),
+            ),
+      ),
+    );
+  }
+}
+
+class NotificationSettingsScreen extends ConsumerWidget {
+  const NotificationSettingsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(preferencesProvider).notificationsEnabled;
+    return _SettingsScaffold(
+      title: 'အသိပေးချက်များ',
+      children: [
+        GlassPanel(
+          child: SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('တရားတော်အသစ် အသိပေးရန်'),
+            subtitle: const Text(
+              'အသစ်တင်သော တရားတော်နှင့် ဓမ္မစာပေများ',
+              style: TextStyle(color: AppColors.muted),
+            ),
+            value: enabled,
+            onChanged: (value) async {
+              final messenger = ScaffoldMessenger.of(context);
+              final service = ref.read(notificationServiceProvider);
+              try {
+                if (value) {
+                  final allowed = await service.enable();
+                  if (!allowed) {
+                    await ref
+                        .read(preferencesProvider.notifier)
+                        .setNotifications(false);
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'ဖုန်း Settings တွင် notification ခွင့်ပြုပေးပါ။',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                } else {
+                  await service.disable();
+                }
+                await ref
+                    .read(preferencesProvider.notifier)
+                    .setNotifications(value);
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      value
+                          ? 'တရားတော်အသစ် အသိပေးချက် ဖွင့်ပြီးပါပြီ။'
+                          : 'အသိပေးချက် ပိတ်ပြီးပါပြီ။',
+                    ),
+                  ),
+                );
+              } catch (error) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text('အသိပေးချက် ချိတ်ဆက်မရပါ: $error')),
+                );
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 14),
+        const Text(
+          'ဖွင့်ထားပါက dhamma_updates topic မှ တရားတော်အသစ် အသိပေးချက်များကို လက်ခံရရှိပါမည်။',
+          style: TextStyle(color: AppColors.muted, height: 1.6),
+        ),
+      ],
+    );
+  }
+}
+
+class ReaderSettingsScreen extends ConsumerWidget {
+  const ReaderSettingsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fontSize = ref.watch(preferencesProvider).readerFontSize;
+    return _SettingsScaffold(
+      title: 'စာလုံးအရွယ်အစား',
+      children: [
+        GlassPanel(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Text('A−'),
+                  Expanded(
+                    child: Slider(
+                      min: 14,
+                      max: 28,
+                      divisions: 14,
+                      value: fontSize,
+                      onChanged: (value) => ref
+                          .read(preferencesProvider.notifier)
+                          .setReaderFontSize(value),
+                    ),
+                  ),
+                  const Text('A+'),
+                ],
+              ),
+              const Divider(),
+              Text(
+                'ဓမ္မစာပေ ဖတ်ရှုရန် နမူနာစာသား',
+                style: TextStyle(fontSize: fontSize, height: 2),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class LanguageSettingsScreen extends ConsumerWidget {
+  const LanguageSettingsScreen({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(preferencesProvider).language;
+    const languages = ['မြန်မာ', 'English'];
+    return _SettingsScaffold(
+      title: 'ဘာသာစကား',
+      children: languages
+          .map(
+            (language) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: GlassPanel(
+                onTap: () => ref
+                    .read(preferencesProvider.notifier)
+                    .setLanguage(language),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.language,
+                    color: selected == language
+                        ? AppColors.gold
+                        : AppColors.muted,
+                  ),
+                  title: Text(language),
+                  trailing: selected == language
+                      ? const Icon(Icons.check_circle, color: AppColors.gold)
+                      : const Icon(
+                          Icons.circle_outlined,
+                          color: AppColors.muted,
+                        ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const _SettingsScaffold(
+    title: 'အက်ပ်အကြောင်း',
+    children: [
+      GlassPanel(
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 42,
+              backgroundImage: AssetImage('assets/images/app_icon.png'),
+            ),
+            SizedBox(height: 14),
+            Text(
+              'Gawdama Tayardaw',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(height: 5),
+            Text('Version 1.0.0', style: TextStyle(color: AppColors.gold)),
+            Divider(height: 30),
+            Text(
+              'ဗုဒ္ဓတရားတော်၊ အသံတရား၊ ရုပ်သံနှင့် ဓမ္မစာပေများကို လွယ်ကူစွာ လေ့လာနိုင်ရန် ဖန်တီးထားသော အက်ပ်ဖြစ်ပါသည်။',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _SettingsScaffold extends StatelessWidget {
+  const _SettingsScaffold({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => ScreenBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(backgroundColor: Colors.transparent, title: Text(title)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        children: children,
       ),
     ),
   );
@@ -492,16 +1285,13 @@ class ContentCard extends ConsumerWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          Hero(
-            tag: 'art-${item.id}',
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                'assets/images/buddha_hero.png',
-                width: 88,
-                height: 88,
-                fit: BoxFit.cover,
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.asset(
+              'assets/images/buddha_hero.png',
+              width: 88,
+              height: 88,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 14),
@@ -587,7 +1377,12 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
   @override
   void initState() {
     super.initState();
-    selected = widget.item.formats.first;
+    selected = widget.item.formats.isNotEmpty
+        ? widget.item.formats.first
+        : ContentFormat.text;
+    Future.microtask(
+      () => ref.read(historyProvider.notifier).record(widget.item.id),
+    );
   }
 
   @override
@@ -614,13 +1409,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
             background: Stack(
               fit: StackFit.expand,
               children: [
-                Hero(
-                  tag: 'art-${item.id}', 
-                  child: Image.asset(
-                    'assets/images/buddha_hero.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                Image.asset('assets/images/buddha_hero.png', fit: BoxFit.cover),
                 const DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -853,46 +1642,44 @@ class _VideoPlayerPanelState extends State<VideoPlayerPanel> {
   );
 }
 
-class TextReaderPanel extends StatefulWidget {
+class TextReaderPanel extends ConsumerWidget {
   const TextReaderPanel({required this.text, super.key});
   final String text;
   @override
-  State<TextReaderPanel> createState() => _TextReaderPanelState();
-}
-
-class _TextReaderPanelState extends State<TextReaderPanel> {
-  double size = 17;
-  @override
-  Widget build(BuildContext context) => GlassPanel(
-    child: Column(
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'ဓမ္မစာပေ ဖတ်ရှုရန်',
-                style: TextStyle(fontWeight: FontWeight.w700),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final size = ref.watch(preferencesProvider).readerFontSize;
+    return GlassPanel(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'ဓမ္မစာပေ ဖတ်ရှုရန်',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-            IconButton(
-              onPressed: () => setState(() => size = (size - 1).clamp(14, 28)),
-              icon: const Text('A−'),
-            ),
-            IconButton(
-              onPressed: () => setState(() => size = (size + 1).clamp(14, 28)),
-              icon: const Text('A+'),
-            ),
-            const Icon(Icons.bookmark_border),
-          ],
-        ),
-        const Divider(),
-        SelectableText(
-          widget.text,
-          style: TextStyle(fontSize: size, height: 2),
-        ),
-      ],
-    ),
-  );
+              IconButton(
+                onPressed: () => ref
+                    .read(preferencesProvider.notifier)
+                    .setReaderFontSize((size - 1).clamp(14, 28)),
+                icon: const Text('A−'),
+              ),
+              IconButton(
+                onPressed: () => ref
+                    .read(preferencesProvider.notifier)
+                    .setReaderFontSize((size + 1).clamp(14, 28)),
+                icon: const Text('A+'),
+              ),
+              const Icon(Icons.bookmark_border),
+            ],
+          ),
+          const Divider(),
+          SelectableText(text, style: TextStyle(fontSize: size, height: 2)),
+        ],
+      ),
+    );
+  }
 }
 
 class _FilterChip extends StatelessWidget {
@@ -935,21 +1722,20 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({required this.icon, required this.title});
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
   final IconData icon;
   final String title;
+  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 9),
     child: GlassPanel(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$title စနစ်ကို Firebase ချိတ်ဆက်ပြီး အသုံးပြုနိုင်ပါသည်။',
-          ),
-        ),
-      ),
+      onTap: onTap,
       child: Row(
         children: [
           GoldIcon(icon),
@@ -1003,6 +1789,23 @@ class _Empty extends StatelessWidget {
   );
 }
 
+class _CompactEmpty extends StatelessWidget {
+  const _CompactEmpty({required this.message});
+  final String message;
+  @override
+  Widget build(BuildContext context) => GlassPanel(
+    child: Row(
+      children: [
+        const Icon(Icons.info_outline, color: AppColors.gold),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(message, style: const TextStyle(color: AppColors.muted)),
+        ),
+      ],
+    ),
+  );
+}
+
 class _ErrorPanel extends StatelessWidget {
   const _ErrorPanel({required this.message});
   final String message;
@@ -1019,6 +1822,15 @@ String _formatName(ContentFormat f) => switch (f) {
   ContentFormat.audio => 'MP3 အသံ',
   ContentFormat.video => 'Video',
   ContentFormat.text => 'စာဖတ်',
+};
+IconData _categoryIcon(String key) => switch (key) {
+  'meditation' => Icons.self_improvement,
+  'headphones' => Icons.headphones_rounded,
+  'video' => Icons.ondemand_video_rounded,
+  'dharma' => Icons.brightness_7_outlined,
+  'lotus' => Icons.spa_outlined,
+  'prayer' => Icons.volunteer_activism_outlined,
+  _ => Icons.auto_stories_outlined,
 };
 String _duration(Duration d) =>
     '${d.inMinutes.remainder(60).toString().padLeft(2, '0')}:${d.inSeconds.remainder(60).toString().padLeft(2, '0')}';

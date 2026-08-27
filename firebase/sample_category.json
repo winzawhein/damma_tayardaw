@@ -1,0 +1,26 @@
+{
+  "name": "သုတ္တန်",
+  "iconKey": "dharma",
+  "sortOrder": 1,
+  "active": true,
+  "sections": [
+    {
+      "title": "မင်္ဂလသုတ်",
+      "content": "မင်္ဂလသုတ် ပါဠိနှင့် မြန်မာပြန်..."
+    },
+    {
+      "title": "ရတနသုတ်",
+      "content": "ရတနသုတ် ပါဠိနှင့် မြန်မာပြန်..."
+    }
+  ],
+  "audios": [
+    {
+      "title": "မင်္ဂလသုတ်",
+      "url": "https://your-cdn.example/mangala.mp3"
+    },
+    {
+      "title": "ရတနသုတ်",
+      "url": "https://your-cdn.example/ratana.mp3"
+    }
+  ]
+}

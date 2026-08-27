@@ -2,6 +2,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../domain/dhamma_content.dart';
 
 class SampleDhammaRepository implements DhammaRepository {
+  static const categories = <DhammaCategory>[
+    DhammaCategory(
+      id: 'prayer',
+      name: 'ဘုရားရှိခိုး',
+      iconKey: 'meditation',
+      sortOrder: 1,
+    ),
+    DhammaCategory(
+      id: 'audio',
+      name: 'ပရိတ်တရား',
+      iconKey: 'headphones',
+      sortOrder: 2,
+    ),
+    DhammaCategory(
+      id: 'sutta',
+      name: 'သုတ္တန်',
+      iconKey: 'dharma',
+      sortOrder: 3,
+    ),
+    DhammaCategory(
+      id: 'practice',
+      name: 'တရားအားထုတ်နည်း',
+      iconKey: 'lotus',
+      sortOrder: 4,
+    ),
+  ];
   static final items = <DhammaContent>[
     DhammaContent(
       id: 'mingala',
@@ -61,6 +87,8 @@ class SampleDhammaRepository implements DhammaRepository {
   @override
   Future<List<DhammaContent>> getPublished() async => items;
   @override
+  Future<List<DhammaCategory>> getCategories() async => categories;
+  @override
   Future<DhammaContent?> getById(String id) async {
     for (final item in items) {
       if (item.id == id) return item;
@@ -74,6 +102,20 @@ class FirestoreDhammaRepository implements DhammaRepository {
   final FirebaseFirestore firestore;
   CollectionReference<Map<String, dynamic>> get _collection =>
       firestore.collection('dhamma_contents');
+  CollectionReference<Map<String, dynamic>> get _categories =>
+      firestore.collection('dhamma_categories');
+
+  @override
+  Future<List<DhammaCategory>> getCategories() async {
+    final snapshot = await _categories.where('active', isEqualTo: true).get();
+    final categories = snapshot.docs
+        .map((document) => DhammaCategory.fromMap(document.id, document.data()))
+        .where((category) => category.name.isNotEmpty)
+        .toList();
+    categories.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return categories;
+  }
+
   @override
   Future<List<DhammaContent>> getPublished() async {
     final snapshot = await _collection

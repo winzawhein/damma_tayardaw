@@ -39,6 +39,42 @@ final appRouter = GoRouter(
       builder: (_, state) =>
           ContentDetailScreen(contentId: state.pathParameters['id']!),
     ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/category/:id',
+      builder: (_, state) =>
+          CategoryDetailScreen(categoryId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/history',
+      builder: (_, _) => const HistoryScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/downloads',
+      builder: (_, _) => const DownloadsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/notifications',
+      builder: (_, _) => const NotificationSettingsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/reader',
+      builder: (_, _) => const ReaderSettingsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/language',
+      builder: (_, _) => const LanguageSettingsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootKey,
+      path: '/settings/about',
+      builder: (_, _) => const AboutScreen(),
+    ),
   ],
 );
 
