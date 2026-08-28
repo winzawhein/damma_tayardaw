@@ -11,7 +11,7 @@
             android:value="dhamma_updates" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />
+            android:resource="@drawable/ic_stat_dhamma" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

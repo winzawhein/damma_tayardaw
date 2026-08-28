@@ -34,7 +34,7 @@ class NotificationService {
 
   Future<void> initialize() async {
     const initializationSettings = InitializationSettings(
-      android: AndroidInitializationSettings('ic_launcher'),
+      android: AndroidInitializationSettings('ic_stat_dhamma'),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
