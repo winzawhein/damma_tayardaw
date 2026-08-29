@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/content/presentation/providers.dart';
 import 'features/content/presentation/screens.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -78,8 +81,29 @@ final appRouter = GoRouter(
   ],
 );
 
-class GawdamaTayardawApp extends StatelessWidget {
+class GawdamaTayardawApp extends ConsumerStatefulWidget {
   const GawdamaTayardawApp({super.key});
+
+  @override
+  ConsumerState<GawdamaTayardawApp> createState() => _GawdamaTayardawAppState();
+}
+
+class _GawdamaTayardawAppState extends ConsumerState<GawdamaTayardawApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final service = ref.read(notificationServiceProvider);
+        final allowed = await service.requestPermissionOnFirstLaunch();
+        if (!mounted || allowed == null) return;
+        await ref.read(preferencesProvider.notifier).setNotifications(allowed);
+      } catch (error) {
+        debugPrint('First-launch notification permission failed: $error');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp.router(
     title: 'Gawdama Tayardaw',

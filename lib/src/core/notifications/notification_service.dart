@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const String dhammaUpdatesTopic = 'dhamma_updates';
 const String _notificationPreferenceKey = 'notifications_enabled';
+const String _permissionRequestedKey = 'notification_permission_requested';
 const String _channelId = 'dhamma_updates';
 const String _channelName = 'Dhamma updates';
 
@@ -95,6 +96,18 @@ class NotificationService {
     final token = await _messaging.getToken();
     debugPrint('FCM token: $token');
     return true;
+  }
+
+  /// Requests notification permission only once, on the first app launch.
+  /// Returns null after the first request so a later app launch never changes
+  /// the choice made from the profile notification switch.
+  Future<bool?> requestPermissionOnFirstLaunch() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (preferences.getBool(_permissionRequestedKey) ?? false) return null;
+
+    final allowed = await enable();
+    await preferences.setBool(_permissionRequestedKey, true);
+    return allowed;
   }
 
   Future<void> disable() => _messaging.unsubscribeFromTopic(dhammaUpdatesTopic);
