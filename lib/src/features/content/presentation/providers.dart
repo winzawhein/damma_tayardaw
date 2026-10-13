@@ -51,6 +51,8 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
     state = prefs.getStringList(_key)?.toSet() ?? <String>{};
   }
 
+  Future<void> refresh() => _load();
+
   Future<void> toggle(String id) async {
     state = state.contains(id) ? ({...state}..remove(id)) : {...state, id};
     final prefs = await SharedPreferences.getInstance();
@@ -97,6 +99,8 @@ class PreferencesNotifier extends StateNotifier<AppPreferences> {
     );
   }
 
+  Future<void> refresh() => _load();
+
   Future<void> setNotifications(bool value) async {
     state = state.copyWith(notificationsEnabled: value);
     final prefs = await SharedPreferences.getInstance();
@@ -129,6 +133,8 @@ class HistoryNotifier extends StateNotifier<List<String>> {
     final prefs = await SharedPreferences.getInstance();
     state = prefs.getStringList('viewed_content_ids') ?? const [];
   }
+
+  Future<void> refresh() => _load();
 
   Future<void> record(String id) async {
     state = [

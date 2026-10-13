@@ -164,6 +164,16 @@ class _BottomNavItem extends StatelessWidget {
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(contentProvider);
+    ref.invalidate(categoriesProvider);
+    await Future.wait([
+      ref.read(contentProvider.future),
+      ref.read(categoriesProvider.future),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final content = ref.watch(contentProvider);
@@ -171,52 +181,68 @@ class HomeScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    const _TopBar(),
-                    const SizedBox(height: 18),
-                    const _Hero(),
-                    const SizedBox(height: 22),
-                    _Search(
-                      onChanged: (v) {
-                        ref.read(searchProvider.notifier).state = v;
-                        context.go('/library');
-                      },
-                    ),
-                    const SizedBox(height: 22),
-                    const _SectionTitle(title: 'ဓမ္မကဏ္ဍများ'),
-                    const SizedBox(height: 12),
-                    const _CategoryRow(),
-                    const SizedBox(height: 26),
-                    const _SectionTitle(
-                      title: 'လူကြိုက်များ',
-                      action: 'အားလုံးကြည့်',
-                    ),
-                    const SizedBox(height: 12),
-                    content.when(
-                      data: (items) => Column(
-                        children: items
-                            .take(3)
-                            .map(
-                              (item) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: ContentCard(item: item),
-                              ),
-                            )
-                            .toList(),
+          child: RefreshIndicator.adaptive(
+            onRefresh: () => _refresh(ref),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const _TopBar(),
+                      const SizedBox(height: 18),
+                      const _Hero(),
+                      const SizedBox(height: 22),
+                      _Search(
+                        onChanged: (v) {
+                          ref.read(searchProvider.notifier).state = v;
+                          context.go('/library');
+                        },
                       ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => _ErrorPanel(message: '$e'),
-                    ),
-                  ]),
+                      const SizedBox(height: 22),
+                      const _SectionTitle(title: 'ဓမ္မကဏ္ဍများ'),
+                      const SizedBox(height: 12),
+                      const _CategoryRow(),
+                      const SizedBox(height: 18),
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.self_improvement),
+                          title: const Text('လေ့ကျင့်မှုနှင့် လေ့လာမှု'),
+                          subtitle: const Text(
+                            'ပုတီး • တရားထိုင် • ဓမ္မပဒ • ဉာဏ်စမ်း',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => context.push('/practice'),
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      const _SectionTitle(
+                        title: 'လူကြိုက်များ',
+                        action: 'အားလုံးကြည့်',
+                      ),
+                      const SizedBox(height: 12),
+                      content.when(
+                        data: (items) => Column(
+                          children: items
+                              .take(3)
+                              .map(
+                                (item) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: ContentCard(item: item, blur: false),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => _ErrorPanel(message: '$e'),
+                      ),
+                    ]),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -870,10 +896,17 @@ class SavedScreen extends ConsumerWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _refresh(WidgetRef ref) => Future.wait([
+    ref.read(preferencesProvider.notifier).refresh(),
+    ref.read(favoritesProvider.notifier).refresh(),
+    ref.read(historyProvider.notifier).refresh(),
+  ]);
+
   @override
-  Widget build(BuildContext context) => ScreenBackground(
+  Widget build(BuildContext context, WidgetRef ref) => ScreenBackground(
     child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -881,75 +914,80 @@ class ProfileScreen extends StatelessWidget {
         title: const Text('မိမိအကောင့်'),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
-        children: [
-          GlassPanel(
-            child: Column(
-              children: [
-                Container(
-                  width: 86,
-                  height: 86,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold),
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/app_icon.png'),
-                      fit: BoxFit.cover,
+      body: RefreshIndicator.adaptive(
+        onRefresh: () => _refresh(ref),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+          children: [
+            GlassPanel(
+              blur: false,
+              child: Column(
+                children: [
+                  Container(
+                    width: 86,
+                    height: 86,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.gold),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/app_icon.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'ဓမ္မမိတ်ဆွေ',
-                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-                ),
-                const Text(
-                  'ဂေါတမ တရားတော်မှ ကြိုဆိုပါသည်',
-                  style: TextStyle(color: AppColors.muted),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  const Text(
+                    'ဓမ္မမိတ်ဆွေ',
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+                  ),
+                  const Text(
+                    'ဂေါတမ တရားတော်မှ ကြိုဆိုပါသည်',
+                    style: TextStyle(color: AppColors.muted),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          _SettingsTile(
-            icon: Icons.history,
-            title: 'နားထောင်ခဲ့သော မှတ်တမ်း',
-            onTap: () => context.push('/settings/history'),
-          ),
-          _SettingsTile(
-            icon: Icons.download_outlined,
-            title: 'ဒေါင်းလုဒ်များ',
-            onTap: () => context.push('/settings/downloads'),
-          ),
-          _SettingsTile(
-            icon: Icons.notifications_none,
-            title: 'အသိပေးချက်များ',
-            onTap: () => context.push('/settings/notifications'),
-          ),
-          _SettingsTile(
-            icon: Icons.text_fields,
-            title: 'စာလုံးအရွယ်အစား',
-            onTap: () => context.push('/settings/reader'),
-          ),
-          _SettingsTile(
-            icon: Icons.language,
-            title: 'ဘာသာစကား',
-            onTap: () => context.push('/settings/language'),
-          ),
-          _SettingsTile(
-            icon: Icons.info_outline,
-            title: 'အက်ပ်အကြောင်း',
-            onTap: () => context.push('/settings/about'),
-          ),
-          const SizedBox(height: 18),
-          const Center(
-            child: Text(
-              'Gawdama Tayardaw • v1.0.0',
-              style: TextStyle(color: AppColors.muted, fontSize: 12),
+            const SizedBox(height: 18),
+            _SettingsTile(
+              icon: Icons.history,
+              title: 'နားထောင်ခဲ့သော မှတ်တမ်း',
+              onTap: () => context.push('/settings/history'),
             ),
-          ),
-        ],
+            _SettingsTile(
+              icon: Icons.download_outlined,
+              title: 'ဒေါင်းလုဒ်များ',
+              onTap: () => context.push('/settings/downloads'),
+            ),
+            _SettingsTile(
+              icon: Icons.notifications_none,
+              title: 'အသိပေးချက်များ',
+              onTap: () => context.push('/settings/notifications'),
+            ),
+            _SettingsTile(
+              icon: Icons.text_fields,
+              title: 'စာလုံးအရွယ်အစား',
+              onTap: () => context.push('/settings/reader'),
+            ),
+            _SettingsTile(
+              icon: Icons.language,
+              title: 'ဘာသာစကား',
+              onTap: () => context.push('/settings/language'),
+            ),
+            _SettingsTile(
+              icon: Icons.info_outline,
+              title: 'အက်ပ်အကြောင်း',
+              onTap: () => context.push('/settings/about'),
+            ),
+            const SizedBox(height: 18),
+            const Center(
+              child: Text(
+                'Gawdama Tayardaw • v1.0.0',
+                style: TextStyle(color: AppColors.muted, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -1275,12 +1313,14 @@ class _SettingsScaffold extends StatelessWidget {
 }
 
 class ContentCard extends ConsumerWidget {
-  const ContentCard({required this.item, super.key});
+  const ContentCard({required this.item, this.blur = true, super.key});
   final DhammaContent item;
+  final bool blur;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favorite = ref.watch(favoritesProvider).contains(item.id);
     return GlassPanel(
+      blur: blur,
       onTap: () => context.push('/content/${item.id}'),
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -1377,9 +1417,8 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
   @override
   void initState() {
     super.initState();
-    selected = widget.item.formats.isNotEmpty
-        ? widget.item.formats.first
-        : ContentFormat.text;
+    final formats = _displayFormats(widget.item.formats);
+    selected = formats.isNotEmpty ? formats.first : ContentFormat.text;
     Future.microtask(
       () => ref.read(historyProvider.notifier).record(widget.item.id),
     );
@@ -1439,7 +1478,7 @@ class _DetailBodyState extends ConsumerState<_DetailBody> {
               const SizedBox(height: 18),
               Wrap(
                 spacing: 8,
-                children: item.formats
+                children: _displayFormats(item.formats)
                     .map(
                       (f) => ChoiceChip(
                         label: Text(_formatName(f)),
@@ -1734,6 +1773,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 9),
     child: GlassPanel(
+      blur: false,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       onTap: onTap,
       child: Row(
@@ -1823,6 +1863,14 @@ String _formatName(ContentFormat f) => switch (f) {
   ContentFormat.video => 'Video',
   ContentFormat.text => 'စာဖတ်',
 };
+
+/// Keep the detail actions predictable, rather than relying on Set iteration.
+/// Video is primary; reading is always shown last.
+List<ContentFormat> _displayFormats(Set<ContentFormat> formats) => const [
+  ContentFormat.video,
+  ContentFormat.audio,
+  ContentFormat.text,
+].where(formats.contains).toList(growable: false);
 IconData _categoryIcon(String key) => switch (key) {
   'meditation' => Icons.self_improvement,
   'headphones' => Icons.headphones_rounded,

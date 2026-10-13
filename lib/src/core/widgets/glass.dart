@@ -9,30 +9,40 @@ class GlassPanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.borderRadius = 22,
     this.onTap,
+    this.blur = true,
   });
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final VoidCallback? onTap;
+
+  /// Backdrop blurs are costly while lists are moving. Disable them for
+  /// repeated scrolling rows and retain them for static/floating panels.
+  final bool blur;
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(borderRadius);
-    return ClipRRect(
-      borderRadius: radius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Material(
-          color: Colors.white.withValues(alpha: .055),
-          shape: RoundedRectangleBorder(
-            borderRadius: radius,
-            side: const BorderSide(color: AppColors.line),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: radius,
-            child: Padding(padding: padding, child: child),
-          ),
-        ),
+    final panel = Material(
+      color: Colors.white.withValues(alpha: .055),
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: const BorderSide(color: AppColors.line),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: Padding(padding: padding, child: child),
+      ),
+    );
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: radius,
+        child: blur
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: panel,
+              )
+            : panel,
       ),
     );
   }

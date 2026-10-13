@@ -108,3 +108,34 @@ flutter test
 ## Branding asset prompt
 
 The project asset was produced with the built-in image generation workflow using the supplied UI as a style reference: a centered serene seated golden Buddha, subtle halo, candlelight, charcoal temple atmosphere, antique-gold palette, no text, no border, and no phone UI. The source is `assets/images/buddha_hero.png`; `assets/images/app_icon.png` is its square launcher crop.
+
+## Practice and learning
+
+Home now has a **လေ့ကျင့်မှုနှင့် လေ့လာမှု** shortcut at `/practice`.
+The existing Home, Library, Saved and Profile tabs and Firestore repository
+remain in use. This module adds no social feed, posts, comments, chat or account
+requirement.
+
+- Offline Dhammapada browser: 423 verses, text/verse search, a daily verse,
+  Pali/Myanmar/English reading and the existing reader font-size controls.
+- Offline quizzes: 3,564 supplied questions in 12 categories, randomized
+  ten-question sessions, answer explanations and an end-of-session score.
+- Listening: 14 supplied YouTube entries using the existing video player.
+  Playback needs internet and depends on the original videos remaining available.
+- Prayer counter: persistent count, 108-bead rounds, undo and confirmed reset.
+- Meditation timer: preset durations, pause/resume and reset. The countdown
+  reconciles elapsed time when the app resumes. It is a foreground tool: leaving
+  the screen ends the session, and it does not schedule a background alarm.
+- Daily practice checklist: five activities stored locally per calendar date,
+  with previous-day browsing. It does not sync to Firebase.
+
+The three JSON files under `assets/data/` were extracted from the supplied
+`ဒိဝါတပတိ (1).apk`. Dhammapada attribution is preserved verbatim and shown in
+its reader. The supplied quiz is imported content, not independently reviewed
+religious scholarship. No remote backend was copied or connected, and the APK's
+branding, artwork and audio recordings were not imported. This APK contains no
+Flutter native application binary, so its complete feature behavior could not
+be verified; the new screens are independent Flutter implementations.
+
+Validation includes dataset integrity, local progress persistence, date-scoped
+checklists, counter interaction, timer controls and offline reader navigation.
