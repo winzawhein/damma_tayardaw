@@ -16,46 +16,225 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     body: navigationShell,
-    extendBody: true,
-    bottomNavigationBar: SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: GlassPanel(
-        padding: const EdgeInsets.all(5),
-        borderRadius: 28,
-        child: SizedBox(
-          height: 74,
-          child: Row(
-            children: [
-              _BottomNavItem(
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home_rounded,
-                label: 'ပင်မ',
-                index: 0,
-                navigationShell: navigationShell,
+    extendBody: navigationShell.currentIndex != 2,
+    bottomNavigationBar: ColoredBox(
+      color: navigationShell.currentIndex == 2
+          ? const Color(0xFFF2EDE3)
+          : AppColors.background,
+      child: SizedBox(
+        height: 100 + MediaQuery.paddingOf(context).bottom,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 22,
+              bottom: 0,
+              child: ClipPath(
+                clipper: const _ShrineNotch(),
+                child: const ColoredBox(color: Color(0xFF161815)),
               ),
-              _BottomNavItem(
-                icon: Icons.menu_book_outlined,
-                selectedIcon: Icons.menu_book_rounded,
-                label: 'တရားတော်',
-                index: 1,
-                navigationShell: navigationShell,
+            ),
+            Positioned(
+              left: 10,
+              right: 10,
+              top: 0,
+              height: 96,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _BottomNavItem(
+                    icon: Icons.home_outlined,
+                    selectedIcon: Icons.home_rounded,
+                    label: 'ပင်မ',
+                    index: 0,
+                    navigationShell: navigationShell,
+                  ),
+                  _BottomNavItem(
+                    icon: Icons.menu_book_outlined,
+                    selectedIcon: Icons.menu_book_rounded,
+                    label: 'တရားတော်',
+                    index: 1,
+                    navigationShell: navigationShell,
+                  ),
+                  Expanded(
+                    child: RepaintBoundary(
+                      child: ShrineNavButton(
+                        selected: navigationShell.currentIndex == 2,
+                        onTap: () => navigationShell.goBranch(2),
+                      ),
+                    ),
+                  ),
+                  _BottomNavItem(
+                    icon: Icons.bookmark_outline_rounded,
+                    selectedIcon: Icons.bookmark_rounded,
+                    label: 'သိမ်းထား',
+                    index: 3,
+                    navigationShell: navigationShell,
+                  ),
+                  _BottomNavItem(
+                    icon: Icons.person_outline_rounded,
+                    selectedIcon: Icons.person_rounded,
+                    label: 'မိမိ',
+                    index: 4,
+                    navigationShell: navigationShell,
+                  ),
+                ],
               ),
-              _BottomNavItem(
-                icon: Icons.bookmark_outline_rounded,
-                selectedIcon: Icons.bookmark_rounded,
-                label: 'သိမ်းထား',
-                index: 2,
-                navigationShell: navigationShell,
-              ),
-              _BottomNavItem(
-                icon: Icons.person_outline_rounded,
-                selectedIcon: Icons.person_rounded,
-                label: 'မိမိ',
-                index: 3,
-                navigationShell: navigationShell,
-              ),
-            ],
-          ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// A deep, rounded cradle keeps the raised shrine medallion separate from the bar.
+class _ShrineNotch extends CustomClipper<Path> {
+  const _ShrineNotch();
+  @override
+  Path getClip(Size size) {
+    final c = size.width / 2;
+    return Path()
+      ..moveTo(0, 26)
+      ..quadraticBezierTo(0, 0, 26, 0)
+      ..lineTo(c - 48, 0)
+      ..cubicTo(c - 39, 0, c - 43, 48, c, 48)
+      ..cubicTo(c + 43, 48, c + 39, 0, c + 48, 0)
+      ..lineTo(size.width - 26, 0)
+      ..quadraticBezierTo(size.width, 0, size.width, 26)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant _ShrineNotch oldClipper) => false;
+}
+
+/// Prominent center destination with a reduced-motion-aware breathing halo.
+class ShrineNavButton extends StatefulWidget {
+  const ShrineNavButton({
+    required this.selected,
+    required this.onTap,
+    super.key,
+  });
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  State<ShrineNavButton> createState() => _ShrineNavButtonState();
+}
+
+class _ShrineNavButtonState extends State<ShrineNavButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulse.stop();
+      _pulse.value = .4;
+    } else if (!_pulse.isAnimating) {
+      _pulse.forward(from: 0);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ShrineNavButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected &&
+        !oldWidget.selected &&
+        !MediaQuery.disableAnimationsOf(context)) {
+      _pulse.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: widget.selected,
+    label: 'ဘုရားကျောင်းဆောင်',
+    child: Tooltip(
+      message: 'ဘုရားကျောင်းဆောင်',
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(25),
+        child: AnimatedBuilder(
+          animation: _pulse,
+          builder: (context, _) {
+            final glow = Curves.easeInOut.transform(
+              1 - (_pulse.value * 2 - 1).abs(),
+            );
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Transform.translate(
+                  offset: const Offset(0, -11),
+                  child: Transform.scale(
+                    scale: 1 + glow * .035,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: widget.selected
+                              ? const [Color(0xFFFFE6A1), Color(0xFFD69B35)]
+                              : const [Color(0xFFEBD29A), Color(0xFFAA7832)],
+                        ),
+                        border: Border.all(
+                          color: const Color(0xFFFFEDBB),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.gold.withValues(
+                              alpha: .18 + glow * .2,
+                            ),
+                            blurRadius: 10 + glow * 12,
+                            spreadRadius: glow * 2,
+                          ),
+                          const BoxShadow(
+                            color: Color(0x66000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.temple_buddhist,
+                        size: 29,
+                        color: Color(0xFF382510),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'ဘုရားကျောင်း',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFFFE4A1),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     ),
@@ -70,89 +249,73 @@ class _BottomNavItem extends StatelessWidget {
     required this.index,
     required this.navigationShell,
   });
-
-  final IconData icon;
-  final IconData selectedIcon;
+  final IconData icon, selectedIcon;
   final String label;
   final int index;
   final StatefulNavigationShell navigationShell;
-
   @override
   Widget build(BuildContext context) {
     final selected = navigationShell.currentIndex == index;
+    final color = selected ? const Color(0xFFF0D394) : const Color(0xFFC2C8C2);
     return Expanded(
-      child: Semantics(
-        selected: selected,
-        button: true,
-        label: label,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(22),
-              onTap: () =>
-                  navigationShell.goBranch(index, initialLocation: selected),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 260),
-                curve: Curves.easeOutCubic,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(22),
-                  gradient: selected
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0x8AF0B94A), Color(0x35A96916)],
-                        )
-                      : null,
-                  border: Border.all(
-                    color: selected
-                        ? const Color(0x99F0B94A)
-                        : Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(3, 26, 3, 4),
+        child: Semantics(
+          button: true,
+          selected: selected,
+          label: label,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () =>
+                navigationShell.goBranch(index, initialLocation: selected),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: selected
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0x8AF0B94A), Color(0x35A96916)],
+                      )
+                    : null,
+                border: Border.all(
+                  color: selected
+                      ? const Color(0x99F0B94A)
+                      : Colors.transparent,
+                ),
+                boxShadow: selected
+                    ? const [
+                        BoxShadow(color: Color(0x30F0B94A), blurRadius: 12),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(selected ? selectedIcon : icon, color: color, size: 25),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
-                  boxShadow: selected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(alpha: .24),
-                            blurRadius: 24,
-                            spreadRadius: 1,
-                          ),
-                          const BoxShadow(
-                            color: Color(0x66000000),
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: Icon(
-                        selected ? selectedIcon : icon,
-                        key: ValueKey(selected),
-                        color: selected ? Colors.white : AppColors.muted,
-                        size: selected ? 27 : 24,
-                      ),
+                  const SizedBox(height: 4),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: 3,
+                    width: selected ? 15 : 0,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: selected ? Colors.white : AppColors.muted,
-                        fontSize: 10.5,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

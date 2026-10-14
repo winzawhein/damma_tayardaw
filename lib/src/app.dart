@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/practice/practice_screens.dart';
+import 'features/shrine/shrine_screen.dart';
 import 'features/content/presentation/providers.dart';
 import 'features/content/presentation/screens.dart';
 
@@ -24,6 +25,11 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(path: '/library', builder: (_, _) => const LibraryScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/shrine', builder: (_, _) => const ShrineScreen()),
           ],
         ),
         StatefulShellBranch(

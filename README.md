@@ -133,9 +133,74 @@ The three JSON files under `assets/data/` were extracted from the supplied
 `ဒိဝါတပတိ (1).apk`. Dhammapada attribution is preserved verbatim and shown in
 its reader. The supplied quiz is imported content, not independently reviewed
 religious scholarship. No remote backend was copied or connected, and the APK's
-branding, artwork and audio recordings were not imported. This APK contains no
+branding, artwork and audio recordings were not imported for the practice module. This APK contains no
 Flutter native application binary, so its complete feature behavior could not
 be verified; the new screens are independent Flutter implementations.
 
 Validation includes dataset integrity, local progress persistence, date-scoped
 checklists, counter interaction, timer controls and offline reader navigation.
+
+
+## Interactive shrine
+
+The center **ဘုရားကျောင်း** bottom tab opens `/shrine`. Home, Library,
+Saved and Profile remain available. The former Home shortcut has been removed.
+
+The active sanctuary restores the temple layout with ivory-and-gold textures,
+jade labels and a fine gold frame. It retains the latest Buddha image, the
+original water/flowers/lamp/gong animations and interactive practice hotspots.
+The center shrine tab uses a larger gold medallion and a gentle breathing glow,
+with the pulse disabled when the system requests reduced motion.
+
+The four offering controls save daily completion locally. The gong performs
+merit sharing. Sound, halo and hint settings persist. Drag gently to adjust
+the camera. Reduced-motion preferences disable ambient motion. The scene adapts rendering quality to the device, and animation/audio pauses on tab changes, app background
+and practice navigation. Practice shortcuts open the existing counter,
+listening, reading, quiz and checklist screens. No social flow is included.
+
+The scene uses a token-protected loopback asset server; only bundled assets
+are served. External navigation and frames are blocked. Android cleartext is
+limited to explicit loopback domains with `includeSubdomains="false"` (required
+by release lint). iOS permits local networking. A rendering failure shows Retry.
+WebGL2 and Android/iOS WebView are required. Browser rendering is verified;
+physical-device smoothness still needs testing on the target phone.
+
+Release builds keep the project's existing signing configuration. Configure
+your production signing key before distributing through an app store.
+
+
+### Ivory temple refresh
+
+The center shrine tab now has a raised gold medallion with a breathing halo;
+reduced-motion settings disable the pulse. The temple layout and original
+water/flowers/lamp/gong ritual animations are restored using the ivory theme,
+jade labels and fine gold border decorations. The latest Buddha image is kept.
+`index.html` loads the adapted `shrine.js` scene again; `sanctuary.js` is an
+inactive earlier design. Existing practice shortcuts and local daily offering
+progress remain unchanged.
+
+
+### Readability and lightweight rendering
+
+The mobile low-quality label override now uses opaque jade with ivory text in
+both normal and lite modes. Header icons and practice links use explicit dark
+colors on ivory, and the system status icons are dark. The bottom navigation
+uses a flat black surface; the center gold shrine button protrudes above it.
+Its animation runs only briefly on entry/selection, stops at rest, and respects
+reduced motion. A repaint boundary isolates it from the scene.
+
+The shrine now requests `q=low&qmode=saver`: renderer pixel ratio 1, no
+post-processing, bloom, MSAA or dynamic shadows. This lowers GPU work without
+removing the offering animations. Real-device frame time has not been profiled.
+
+
+### Notched navigation and illustrated offerings
+
+The center medallion now sits in a curved cradle cut into the charcoal bottom
+bar. Other destinations again use the original rounded gold-gradient selected
+panels. The offering tray uses the supplied illustrated study/water/flowers/
+lamp/gong/shrine assets in gold circular frames, with horizontal navigation.
+Completed offerings keep their artwork and show a small completion badge.
+
+The lightweight renderer remains enabled. Its label loop now skips removed
+social hotspot elements, preventing repeated access to missing DOM elements.
