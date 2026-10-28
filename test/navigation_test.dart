@@ -21,7 +21,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(Image), findsNWidgets(6));
+      expect(find.byType(Image), findsNWidgets(5));
+      expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       await tester.tap(find.text('ရေချမ်း'));
       expect(action, 'water');
@@ -47,7 +48,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.temple_buddhist), findsOneWidget);
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
     expect(tester.binding.hasScheduledFrame, isFalse);
     expect(tester.takeException(), isNull);
   });
@@ -63,6 +64,10 @@ void main() {
     final router = GoRouter(
       initialLocation: '/home',
       routes: [
+        GoRoute(
+          path: '/dhamma-wheel',
+          builder: (_, _) => const Scaffold(body: Text('screen:wheel')),
+        ),
         StatefulShellRoute.indexedStack(
           builder: (_, _, shell) => AppShell(navigationShell: shell),
           branches: [
@@ -82,20 +87,58 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     for (final entry in {
-      'ဘုရားကျောင်း': 'shrine',
+      'ဘုရားစဉ်': 'shrine',
       'သိမ်းထား': 'saved',
       'မိမိ': 'profile',
       'တရားတော်': 'library',
       'ပင်မ': 'home',
     }.entries) {
-      await tester.tap(find.text(entry.key));
-      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(
+        entry.value == 'shrine'
+            ? find.byKey(const ValueKey('dhamma-menu-launcher'))
+            : find.text(entry.key),
+      );
+      await tester.pumpAndSettle();
+      if (entry.value == 'shrine') {
+        expect(find.byKey(const ValueKey('dhamma-menu-wheel')), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('dhamma-menu-shrine')));
+        await tester.pumpAndSettle();
+      }
       expect(find.text('screen:${entry.value}'), findsOneWidget);
       expect(tester.takeException(), isNull);
     }
     await tester.pumpAndSettle();
     expect(tester.binding.hasScheduledFrame, isFalse);
-    final shrineY = tester.getCenter(find.byIcon(Icons.temple_buddhist)).dy;
+    await tester.tap(find.byKey(const ValueKey('dhamma-menu-launcher')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final openingCenter = tester.getCenter(
+      find.byKey(const ValueKey('dhamma-menu-wheel')),
+    );
+    await tester.pumpAndSettle();
+    final expandedCenter = tester.getCenter(
+      find.byKey(const ValueKey('dhamma-menu-wheel')),
+    );
+    expect(expandedCenter.dx, lessThan(openingCenter.dx));
+    expect(expandedCenter.dy, lessThan(openingCenter.dy));
+    final launcherCenter = tester.getCenter(
+      find.byKey(const ValueKey('dhamma-menu-launcher')),
+    );
+    final closeCenter = tester.getCenter(
+      find.byKey(const ValueKey('dhamma-menu-close')),
+    );
+    expect((launcherCenter - closeCenter).distance, lessThan(1));
+    await tester.tap(find.byTooltip('ပိတ်ရန်'));
+    await tester.pumpAndSettle();
+    expect(find.text('screen:home'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('dhamma-menu-launcher')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('dhamma-menu-wheel')));
+    await tester.pumpAndSettle();
+    expect(find.text('screen:wheel'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    final shrineY = tester.getCenter(find.byIcon(Icons.grid_view_rounded)).dy;
     final homeY = tester.getCenter(find.byIcon(Icons.home_rounded)).dy;
     expect(homeY - shrineY, greaterThan(8));
   });

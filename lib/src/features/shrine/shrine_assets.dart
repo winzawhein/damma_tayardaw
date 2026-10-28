@@ -1,5 +1,7 @@
 // Explicit allowlist for the loopback asset server.
 const shrineAssets = <String>{
+  'motion_budget.js',
+  'img/kanok_frieze.svg',
   'audio/bell.m4a',
   'audio/candle.m4a',
   'audio/chime.m4a',

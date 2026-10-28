@@ -124,7 +124,7 @@ class NotificationService {
 
     await _localNotifications.show(
       id: message.messageId?.hashCode ?? message.hashCode,
-      title: notification.title ?? 'Gawdama Tayardaw',
+      title: notification.title ?? 'ပဇ္ဇောတ',
       body: notification.body,
       payload: message.data['contentId'] as String?,
       notificationDetails: const NotificationDetails(

@@ -1,3 +1,4 @@
+import 'shrine_header.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -93,7 +94,7 @@ class _ShrineScreenState extends State<ShrineScreen>
         return;
       }
       _uri = uri.replace(
-        queryParameters: {'theme': 'stone', 'q': 'low', 'qmode': 'saver'},
+        queryParameters: {'theme': 'classic', 'q': 'low', 'qmode': 'saver'},
       );
       final params = WebViewPlatform.instance is WebKitWebViewPlatform
           ? WebKitWebViewControllerCreationParams(
@@ -180,6 +181,7 @@ class _ShrineScreenState extends State<ShrineScreen>
       'showLabels': _labels,
       'aura': _aura,
       'hour': DateTime.now().hour,
+      'insets': {'top': 0, 'bottom': 116},
     });
   }
 
@@ -342,85 +344,67 @@ class _ShrineScreenState extends State<ShrineScreen>
       ),
     ),
   );
+  void _help() => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('ဘုရားစဉ် အသုံးပြုနည်း'),
+      content: const SingleChildScrollView(
+        child: Text(
+          'မြင်ကွင်းကို ဘေးသို့ဆွဲ၍ နေရာပြောင်းနိုင်သည်။\n\nရေချမ်း၊ ပန်း၊ ဆီမီး ကပ်လှူရန် အောက်ရှိ ပုံများကို နှိပ်ပါ။\n\nအမျှဝေ၊ ပုတီး၊ ဂါထာ၊ ဒါနနှင့် ဝါတွင်းအမည်များကို နှိပ်၍ အသုံးပြုနိုင်သည်။\n\nအပေါ်ရှိ အကွက်ပုံမှ လုပ်ဆောင်ချက်အားလုံးကို ဖွင့်နိုင်သည်။',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('နားလည်ပါပြီ'),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
     value: const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF101211),
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Color(0xFF20140E),
       systemNavigationBarIconBrightness: Brightness.light,
     ),
     child: Scaffold(
-      backgroundColor: const Color(0xFFF2EDE3),
+      backgroundColor: const Color(0xFF3B2116),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 12, 12, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ငြိမ်းချမ်းရာ',
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: Color(0xFF264537),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'ဘုရားကျောင်းဆောင်  ·  ${_offerings.values.where((v) => v).length}/3 ကပ်လှူပြီး',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF526658),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'အသံ',
-                    color: const Color(0xFF264537),
-                    disabledColor: const Color(0xFF697D6C),
-                    onPressed: _ready
-                        ? () {
-                            setState(() => _muted = !_muted);
-                            _save();
-                          }
-                        : null,
-                    icon: Icon(
-                      _muted
-                          ? Icons.volume_off_outlined
-                          : Icons.volume_up_outlined,
-                      size: 21,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'အပြင်အဆင်',
-                    color: const Color(0xFF264537),
-                    disabledColor: const Color(0xFF697D6C),
-                    onPressed: _ready ? _settings : null,
-                    icon: const Icon(Icons.tune_rounded, size: 21),
-                  ),
-                ],
-              ),
+            ShrineHeader(
+              completed: _offerings.values.where((value) => value).length,
+              muted: _muted,
+              onSound: _ready
+                  ? () {
+                      setState(() => _muted = !_muted);
+                      _save();
+                    }
+                  : null,
+              onSettings: _ready ? _settings : null,
+              onMenu: _ready ? _menu : null,
+              onHelp: _help,
             ),
             Expanded(
               child: Stack(
                 children: [
                   if (_controller != null)
-                    WebViewWidget(controller: _controller!),
+                    Positioned.fill(
+                      child: WebViewWidget(controller: _controller!),
+                    ),
                   if (!_ready)
                     Positioned.fill(
                       child: ColoredBox(
-                        color: const Color(0xFFF2EDE3),
+                        color: const Color(0xFF3B2116),
                         child: Center(
                           child: _error == null
-                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              ? const CircularProgressIndicator(
+                                  color: Color(0xFFE4C681),
+                                )
                               : Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -429,6 +413,9 @@ class _ShrineScreenState extends State<ShrineScreen>
                                       child: Text(
                                         _error!,
                                         textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Color(0xFFFFEDC3),
+                                        ),
                                       ),
                                     ),
                                     FilledButton(
@@ -447,70 +434,42 @@ class _ShrineScreenState extends State<ShrineScreen>
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              height: 2,
-              margin: const EdgeInsets.symmetric(horizontal: 30),
-              child: _busy
-                  ? const LinearProgressIndicator(minHeight: 2)
-                  : const SizedBox.expand(),
-            ),
-            OfferingTray(
-              enabled: _ready && !_busy,
-              offerings: _offerings,
-              onAction: (action) {
-                if (action == 'study') {
-                  _openTarget('books');
-                } else if (action == 'shrine') {
-                  _call('goBay', 1);
-                } else if (action == 'gong') {
-                  _call('strikeGong');
-                } else {
-                  _call('offer', action);
-                }
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF244A3A),
-                      disabledForegroundColor: const Color(0xFF697D6C),
+                  if (_ready)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 6,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_busy)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 30),
+                              child: LinearProgressIndicator(
+                                minHeight: 2,
+                                color: Color(0xFFE4C681),
+                              ),
+                            ),
+                          OfferingTray(
+                            enabled: !_busy,
+                            offerings: _offerings,
+                            onAction: (action) {
+                              if (action == 'study') {
+                                _openTarget('books');
+                              } else if (action == 'shrine') {
+                                _call('goBay', 1);
+                              } else if (action == 'music') {
+                                _call('unlockAudio');
+                                setState(() => _muted = !_muted);
+                                _save();
+                              } else {
+                                _call('offer', action);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    onPressed: _ready ? () => _openTarget('beads') : null,
-                    icon: const Icon(Icons.blur_circular, size: 17),
-                    label: const Text('ပုတီး', style: TextStyle(fontSize: 12)),
-                  ),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF244A3A),
-                      disabledForegroundColor: const Color(0xFF697D6C),
-                    ),
-                    onPressed: _ready ? () => _openTarget('gatha') : null,
-                    icon: const Icon(Icons.headphones_outlined, size: 17),
-                    label: const Text(
-                      'နာယူရန်',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF244A3A),
-                      disabledForegroundColor: const Color(0xFF697D6C),
-                    ),
-                    onPressed: _ready ? _menu : null,
-                    icon: const Icon(Icons.grid_view_rounded, size: 17),
-                    label: const Text(
-                      'အားလုံး',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
                 ],
               ),
             ),

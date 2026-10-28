@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>ဘုရားကျောင်းဆောင်</title>
+<title>ဘုရားစဉ်</title>
 <link rel="icon" href="data:,">
 <style>
   @font-face {
@@ -274,6 +274,8 @@ body.stone .lbl, body.lite.stone .lbl, body .lbl {
 .lbl span {color:inherit !important}
 body.stone .lbl .chk {color:#163d32 !important;background:#f1d692 !important}
 #sanctuary-trim {display:none}
+
+body:not(.stone) .lbl { background:#3b2514 !important;color:#fff0c8 !important;border-color:#bd9144 !important; }
 </style>
 <script>if (/[?&]theme=stone(&|$)/.test(location.search)) document.documentElement.classList.add('stone');</script>
 </head>
@@ -309,6 +311,7 @@ body.stone .lbl .chk {color:#163d32 !important;background:#f1d692 !important}
     });
   })();
 </script>
+<script src="motion_budget.js"></script>
 <script id="shrine-bundle" src="shrine.js"></script>
 </body>
 </html>

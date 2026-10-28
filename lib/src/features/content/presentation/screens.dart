@@ -7,6 +7,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../core/notifications/notification_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass.dart';
+import '../../../core/widgets/dhamma_menu.dart';
 import '../domain/dhamma_content.dart';
 import 'providers.dart';
 
@@ -16,104 +17,93 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     body: navigationShell,
-    extendBody: navigationShell.currentIndex != 2,
-    bottomNavigationBar: ColoredBox(
-      color: navigationShell.currentIndex == 2
-          ? const Color(0xFFF2EDE3)
-          : AppColors.background,
-      child: SizedBox(
-        height: 100 + MediaQuery.paddingOf(context).bottom,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 22,
-              bottom: 0,
-              child: ClipPath(
-                clipper: const _ShrineNotch(),
-                child: const ColoredBox(color: Color(0xFF161815)),
+    backgroundColor: navigationShell.currentIndex == 2
+        ? const Color(0xFF3B2116)
+        : AppColors.background,
+    bottomNavigationBar: SizedBox(
+      height: 88 + MediaQuery.paddingOf(context).bottom,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            top: 16,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: navigationShell.currentIndex == 2
+                    ? const Color(0xFFFFFAED)
+                    : const Color(0xFF161815),
+                border: Border(
+                  top: BorderSide(
+                    color: navigationShell.currentIndex == 2
+                        ? const Color(0xFFE8DECA)
+                        : const Color(0xFF38372F),
+                  ),
+                ),
               ),
             ),
-            Positioned(
-              left: 10,
-              right: 10,
-              top: 0,
-              height: 96,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _BottomNavItem(
-                    icon: Icons.home_outlined,
-                    selectedIcon: Icons.home_rounded,
-                    label: 'ပင်မ',
-                    index: 0,
-                    navigationShell: navigationShell,
-                  ),
-                  _BottomNavItem(
-                    icon: Icons.menu_book_outlined,
-                    selectedIcon: Icons.menu_book_rounded,
-                    label: 'တရားတော်',
-                    index: 1,
-                    navigationShell: navigationShell,
-                  ),
-                  Expanded(
-                    child: RepaintBoundary(
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 0,
+            height: 88,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _BottomNavItem(
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home_rounded,
+                  label: 'ပင်မ',
+                  index: 0,
+                  navigationShell: navigationShell,
+                ),
+                _BottomNavItem(
+                  icon: Icons.menu_book_outlined,
+                  selectedIcon: Icons.menu_book_rounded,
+                  label: 'တရားတော်',
+                  index: 1,
+                  navigationShell: navigationShell,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 28),
                       child: ShrineNavButton(
                         selected: navigationShell.currentIndex == 2,
-                        onTap: () => navigationShell.goBranch(2),
+                        onTap: () async {
+                          final choice = await showDhammaMenu(context);
+                          if (!context.mounted) return;
+                          if (choice == 'shrine') navigationShell.goBranch(2);
+                          if (choice == 'wheel') context.push('/dhamma-wheel');
+                        },
                       ),
                     ),
                   ),
-                  _BottomNavItem(
-                    icon: Icons.bookmark_outline_rounded,
-                    selectedIcon: Icons.bookmark_rounded,
-                    label: 'သိမ်းထား',
-                    index: 3,
-                    navigationShell: navigationShell,
-                  ),
-                  _BottomNavItem(
-                    icon: Icons.person_outline_rounded,
-                    selectedIcon: Icons.person_rounded,
-                    label: 'မိမိ',
-                    index: 4,
-                    navigationShell: navigationShell,
-                  ),
-                ],
-              ),
+                ),
+                _BottomNavItem(
+                  icon: Icons.bookmark_outline_rounded,
+                  selectedIcon: Icons.bookmark_rounded,
+                  label: 'သိမ်းထား',
+                  index: 3,
+                  navigationShell: navigationShell,
+                ),
+                _BottomNavItem(
+                  icon: Icons.person_outline_rounded,
+                  selectedIcon: Icons.person_rounded,
+                  label: 'မိမိ',
+                  index: 4,
+                  navigationShell: navigationShell,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     ),
   );
 }
 
-/// A deep, rounded cradle keeps the raised shrine medallion separate from the bar.
-class _ShrineNotch extends CustomClipper<Path> {
-  const _ShrineNotch();
-  @override
-  Path getClip(Size size) {
-    final c = size.width / 2;
-    return Path()
-      ..moveTo(0, 26)
-      ..quadraticBezierTo(0, 0, 26, 0)
-      ..lineTo(c - 48, 0)
-      ..cubicTo(c - 39, 0, c - 43, 48, c, 48)
-      ..cubicTo(c + 43, 48, c + 39, 0, c + 48, 0)
-      ..lineTo(size.width - 26, 0)
-      ..quadraticBezierTo(size.width, 0, size.width, 26)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant _ShrineNotch oldClipper) => false;
-}
-
-/// Prominent center destination with a reduced-motion-aware breathing halo.
-class ShrineNavButton extends StatefulWidget {
+/// Raised menu launcher; animations run only when its state changes.
+class ShrineNavButton extends StatelessWidget {
   const ShrineNavButton({
     required this.selected,
     required this.onTap,
@@ -122,119 +112,43 @@ class ShrineNavButton extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
   @override
-  State<ShrineNavButton> createState() => _ShrineNavButtonState();
-}
-
-class _ShrineNavButtonState extends State<ShrineNavButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  );
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _pulse.stop();
-      _pulse.value = .4;
-    } else if (!_pulse.isAnimating) {
-      _pulse.forward(from: 0);
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant ShrineNavButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selected &&
-        !oldWidget.selected &&
-        !MediaQuery.disableAnimationsOf(context)) {
-      _pulse.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    selected: widget.selected,
-    label: 'ဘုရားကျောင်းဆောင်',
+    label: 'ဓမ္မ မီနူး',
     child: Tooltip(
-      message: 'ဘုရားကျောင်းဆောင်',
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(25),
-        child: AnimatedBuilder(
-          animation: _pulse,
-          builder: (context, _) {
-            final glow = Curves.easeInOut.transform(
-              1 - (_pulse.value * 2 - 1).abs(),
-            );
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Transform.translate(
-                  offset: const Offset(0, -11),
-                  child: Transform.scale(
-                    scale: 1 + glow * .035,
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: widget.selected
-                              ? const [Color(0xFFFFE6A1), Color(0xFFD69B35)]
-                              : const [Color(0xFFEBD29A), Color(0xFFAA7832)],
-                        ),
-                        border: Border.all(
-                          color: const Color(0xFFFFEDBB),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(
-                              alpha: .18 + glow * .2,
-                            ),
-                            blurRadius: 10 + glow * 12,
-                            spreadRadius: glow * 2,
-                          ),
-                          const BoxShadow(
-                            color: Color(0x66000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.temple_buddhist,
-                        size: 29,
-                        color: Color(0xFF382510),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'ဘုရားကျောင်း',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFFFE4A1),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+      message: 'ဓမ္မ မီနူး',
+      child: Container(
+        key: const ValueKey('dhamma-menu-launcher'),
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFE6AA), Color(0xFFBD8936)],
+          ),
+          border: Border.all(color: const Color(0xFFFFEDC5), width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x303C2A10),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: const Icon(
+              Icons.grid_view_rounded,
+              color: Color(0xFF493015),
+              size: 27,
+            ),
+          ),
         ),
       ),
     ),
@@ -256,66 +170,52 @@ class _BottomNavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = navigationShell.currentIndex == index;
-    final color = selected ? const Color(0xFFF0D394) : const Color(0xFFC2C8C2);
+    final color = navigationShell.currentIndex == 2
+        ? const Color(0xFF665A40)
+        : selected
+        ? const Color(0xFFF0D394)
+        : const Color(0xFFC2C8C2);
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(3, 26, 3, 4),
+        padding: const EdgeInsets.only(top: 24),
         child: Semantics(
           button: true,
           selected: selected,
           label: label,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () =>
-                navigationShell.goBranch(index, initialLocation: selected),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: selected
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0x8AF0B94A), Color(0x35A96916)],
-                      )
-                    : null,
-                border: Border.all(
-                  color: selected
-                      ? const Color(0x99F0B94A)
-                      : Colors.transparent,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () =>
+                  navigationShell.goBranch(index, initialLocation: selected),
+              child: SizedBox(
+                height: 60,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      selected ? selectedIcon : icon,
+                      color: color,
+                      size: 24,
+                    ),
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 10.5,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                boxShadow: selected
-                    ? const [
-                        BoxShadow(color: Color(0x30F0B94A), blurRadius: 12),
-                      ]
-                    : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(selected ? selectedIcon : icon, color: color, size: 25),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 3,
-                    width: selected ? 15 : 0,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
@@ -377,6 +277,17 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () => context.push('/practice'),
+                        ),
+                      ),
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.hub_outlined),
+                          title: const Text('ပဋိစ္စသမုပ္ပါဒ် စက်ဝိုင်း'),
+                          subtitle: const Text(
+                            'မိုးကုတ် • ဓမ္မသဘော • အင်္ဂါ ၁၂ ပါး',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => context.push('/dhamma-wheel'),
                         ),
                       ),
                       const SizedBox(height: 26),
@@ -487,10 +398,7 @@ class _Hero extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'ဂေါတမ တရားတော်',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text('ပဇ္ဇောတ', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 5),
               const Text(
                 'တရားတော်နှင့် ဓမ္မစာပေများကို တစ်နေရာတည်းတွင်',
@@ -1105,7 +1013,7 @@ class ProfileScreen extends ConsumerWidget {
                     style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
                   ),
                   const Text(
-                    'ဂေါတမ တရားတော်မှ ကြိုဆိုပါသည်',
+                    'ပဇ္ဇောတမှ ကြိုဆိုပါသည်',
                     style: TextStyle(color: AppColors.muted),
                   ),
                 ],
@@ -1145,7 +1053,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 18),
             const Center(
               child: Text(
-                'Gawdama Tayardaw • v1.0.0',
+                'ပဇ္ဇောတ • v1.0.0',
                 style: TextStyle(color: AppColors.muted, fontSize: 12),
               ),
             ),
@@ -1441,7 +1349,7 @@ class AboutScreen extends StatelessWidget {
             ),
             SizedBox(height: 14),
             Text(
-              'Gawdama Tayardaw',
+              'ပဇ္ဇောတ',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 5),

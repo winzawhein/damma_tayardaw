@@ -204,3 +204,61 @@ Completed offerings keep their artwork and show a small completion badge.
 
 The lightweight renderer remains enabled. Its label loop now skips removed
 social hotspot elements, preventing repeated access to missing DOM elements.
+
+### ပဇ္ဇောတ — dependent origination study wheel
+
+The display name is now ပဇ္ဇောတ on Android, iOS, and app surfaces. Package IDs,
+Firebase configuration, and saved preferences stay unchanged so existing installs
+retain their data.
+
+Home → ပဋိစ္စသမုပ္ပါဒ် စက်ဝိုင်း (also under Practice) opens `/dhamma-wheel`.
+The offline native Flutter screen includes twelve selectable links, four temporal
+cause/result groups, three rounds, arising/cessation notes, and an adjustable
+projected 3D wheel. Drag changes rotation/tilt; flat view supports reading.
+Rendering is event-driven, without a WebView or an idle ticker. Reduced-motion
+settings disable selection animation. Numbered nodes and text chips support
+accessible selection. Source links open externally and require connectivity.
+
+The Burmese summaries are study notes, not a verbatim sermon or an audio recording.
+Sources: SN 12.2, https://accesstoinsight.org/tipitaka/sn/sn12/sn12.002.than.html;
+U Candavarabhivamsa, Mogok Yeiktha, *The Cycle of Dependent Origination*, pp. 8–14,
+https://dhammadownload.com/MP3Library/Mogok-Mp3-Ver2/pdf/MogokSayadawPaticcasamuppada.pdf.
+The four groups follow the detailed explanation on pp. 8–10 (2/5/3/2 links),
+rather than the inconsistent contents list on p. 7. Bhava in the cause group
+represents kamma-bhava; the note distinguishes resultant existence.
+
+### Sculpted wheel and shrine rendering budget
+
+`PhysicalDhammaWheel` isolates drag updates from the study text, projects solid
+brass/enamel geometry, and uses a bounded 550 ms ease-out after a fling. It stops
+when settled and respects reduced motion. The shrine's saver mode now rests its
+render loop when gestures, camera transitions, and rituals finish. A small
+30-second time-of-day refresh remains; gestures and native bridge calls wake it
+immediately. Background pause clears the pending refresh. Idle decorative motion
+is intentionally frozen to reduce GPU work, while offering/gong rituals retain
+active rendering. Run `node test/js/shrine_motion_test.cjs` for the scheduler checks.
+
+### Center chooser and classic Kanok shrine
+
+The raised center button opens a dimmed two-choice overlay. Choosing the shrine
+selects its existing shell branch; choosing the Dhamma wheel pushes its study
+route. Closing the chooser leaves the current screen intact. Other navigation
+branches keep their existing behavior.
+
+The shrine uses the classic wood/gold scene with a new local SVG Kanok frieze,
+a warm header (settings, feature menu, sound, help), an overlaid six-item offering
+tray, and an ivory navigation cradle. The tray supports study, water, flowers,
+candles, background audio, and returning to the altar. Merit sharing remains on
+the scene's gong hotspot. Existing beads, listening, planner and study screens
+remain reachable through scene labels and the feature menu. No social feed is
+added. SVG is explicitly allowlisted and served with its proper MIME type.
+The saver-mode scheduler also wakes on resize to redraw the WebView canvas.
+
+### Animated launch
+
+The app renders a dark/gold vector light-and-lotus introduction immediately while
+Firebase and notifications initialize. The 1.8-second animation runs once; reduced
+motion skips its delay. Application routes and first-launch permission prompts are
+created only after initialization completes. Initialization errors offer a retry.
+The emblem uses native painting with no video, 3D engine, or continuous idle ticker.
+Android and iOS native launch backgrounds match the Flutter splash.

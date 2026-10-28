@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../content/presentation/screens.dart';
 import 'practice_data.dart';
+import 'prayer_beads.dart';
+import '../dependent_origination/wheel_screen.dart';
 
 void _open(BuildContext context, Widget page) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
@@ -16,6 +18,13 @@ class PracticeScreen extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        _entry(
+          context,
+          Icons.hub_outlined,
+          'ပဋိစ္စသမုပ္ပါဒ် စက်ဝိုင်း',
+          'မိုးကုတ် • ဓမ္မသဘော • အင်္ဂါ ၁၂ ပါး',
+          const DhammaWheelScreen(),
+        ),
         _entry(
           context,
           Icons.auto_stories,
@@ -422,7 +431,11 @@ class _CounterScreenState extends State<CounterScreen> {
   Future<void> _change(int value) async {
     if (value < 0 || progress == null) return;
     setState(() => count = value);
-    HapticFeedback.selectionClick();
+    if (value > 0 && value % 108 == 0) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.selectionClick();
+    }
     await progress!.setCount(value);
   }
 
@@ -456,14 +469,12 @@ class _CounterScreenState extends State<CounterScreen> {
           Text('$count', style: Theme.of(context).textTheme.headlineLarge),
           Text('${count ~/ 108} ပတ် • ${count % 108} / 108'),
           const SizedBox(height: 32),
-          SizedBox(
-            width: 180,
-            height: 180,
-            child: FilledButton(
-              onPressed: progress == null ? null : () => _change(count + 1),
-              child: const Icon(Icons.touch_app, size: 64),
-            ),
+          PrayerBeads(
+            count: count,
+            onAdvance: progress == null ? null : () => _change(count + 1),
           ),
+          const SizedBox(height: 12),
+          const Text('ပုတီးကို အောက်သို့ဆွဲပါ သို့မဟုတ် နှိပ်ပါ'),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

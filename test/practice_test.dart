@@ -75,12 +75,19 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: CounterScreen()));
     await tester.pumpAndSettle();
     expect(find.text('107'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.touch_app));
+    await tester.tap(find.byKey(const ValueKey('prayer-beads')));
     await tester.pumpAndSettle();
     expect(find.text('108'), findsOneWidget);
+    await tester.drag(
+      find.byKey(const ValueKey('prayer-beads')),
+      const Offset(0, 160),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('109'), findsOneWidget);
+    expect(tester.binding.hasScheduledFrame, isFalse);
     expect(
       (await SharedPreferences.getInstance()).getInt('practice.beads'),
-      108,
+      109,
     );
   });
 

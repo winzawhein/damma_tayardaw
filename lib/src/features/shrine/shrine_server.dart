@@ -38,6 +38,7 @@ class ShrineServer {
             'html': 'text/html; charset=utf-8',
             'js': 'application/javascript',
             'webp': 'image/webp',
+            'svg': 'image/svg+xml',
             'ttf': 'font/ttf',
             'm4a': 'audio/mp4',
           }[extension] ??

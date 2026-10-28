@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/practice/practice_screens.dart';
+import 'features/dependent_origination/wheel_screen.dart';
 import 'features/shrine/shrine_screen.dart';
 import 'features/content/presentation/providers.dart';
 import 'features/content/presentation/screens.dart';
@@ -13,6 +14,10 @@ final appRouter = GoRouter(
   navigatorKey: _rootKey,
   initialLocation: '/home',
   routes: [
+    GoRoute(
+      path: '/dhamma-wheel',
+      builder: (_, _) => const DhammaWheelScreen(),
+    ),
     GoRoute(path: '/practice', builder: (_, _) => const PracticeScreen()),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),
@@ -114,7 +119,7 @@ class _GawdamaTayardawAppState extends ConsumerState<GawdamaTayardawApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-    title: 'Gawdama Tayardaw',
+    title: 'ပဇ္ဇောတ',
     debugShowCheckedModeBanner: false,
     theme: AppTheme.dark,
     routerConfig: appRouter,
